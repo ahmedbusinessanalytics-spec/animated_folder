@@ -1,77 +1,150 @@
-/* Prevent mouse-wheel scrolling while preserving hover, mousemove, and click interactions */
+/* =========================================================
+   LOCK PAGE SCROLL
+   Prevent wheel, touch, and keyboard scrolling
+   while preserving hover, mouse movement, and animations.
+   ========================================================= */
+
 (function () {
-  function stopWheelScroll(e) {
+
+  // Prevent mouse wheel scrolling
+  function preventWheelScroll(e) {
     e.preventDefault();
     e.stopPropagation();
   }
 
-  document.addEventListener("wheel", stopWheelScroll, {
+  document.addEventListener("wheel", preventWheelScroll, {
     passive: false,
     capture: true
   });
 
-  window.addEventListener("wheel", stopWheelScroll, {
+  window.addEventListener("wheel", preventWheelScroll, {
     passive: false,
     capture: true
   });
+
+  // Prevent keyboard scrolling
+  document.addEventListener("keydown", function (e) {
+    const scrollKeys = [
+      "ArrowUp",
+      "ArrowDown",
+      "PageUp",
+      "PageDown",
+      "Home",
+      "End",
+      " "
+    ];
+
+    if (scrollKeys.includes(e.key)) {
+      e.preventDefault();
+    }
+  }, true);
+
+  // Prevent touch scrolling
+  document.addEventListener("touchmove", function (e) {
+    e.preventDefault();
+  }, {
+    passive: false,
+    capture: true
+  });
+
 })();
 
 
-/* Optional: tilt + moving glass highlight while the mouse is over the folder */
+/* =========================================================
+   HOVER TILT + MOVING GLASS HIGHLIGHT
+   Original animation preserved
+   ========================================================= */
+
 document.querySelectorAll('.gf').forEach(function(el) {
+
   var s = el.querySelector('.gf-stage');
 
   el.addEventListener('mousemove', function(e) {
-    var r = el.getBoundingClientRect(),
-        x = (e.clientX - r.left) / r.width,
-        y = (e.clientY - r.top) / r.height;
 
-    s.style.setProperty('--gf-ry', ((x - .5) * 10) + 'deg');
-    s.style.setProperty('--gf-rx', ((.5 - y) * 8) + 'deg');
+    var r = el.getBoundingClientRect();
+    var x = (e.clientX - r.left) / r.width;
+    var y = (e.clientY - r.top) / r.height;
 
-    el.querySelector('.gf-glass').style.setProperty('--gf-mx', (x * 100) + '%');
-    el.querySelector('.gf-glass').style.setProperty('--gf-my', (y * 100) + '%');
+    s.style.setProperty(
+      '--gf-ry',
+      ((x - .5) * 10) + 'deg'
+    );
+
+    s.style.setProperty(
+      '--gf-rx',
+      ((.5 - y) * 8) + 'deg'
+    );
+
+    el.querySelector('.gf-glass').style.setProperty(
+      '--gf-mx',
+      (x * 100) + '%'
+    );
+
+    el.querySelector('.gf-glass').style.setProperty(
+      '--gf-my',
+      (y * 100) + '%'
+    );
+
   });
 
   el.addEventListener('mouseleave', function() {
+
     s.style.setProperty('--gf-rx', '0deg');
     s.style.setProperty('--gf-ry', '0deg');
+
   });
+
 });
 
 
-/* Responsive: fit the folder to the visible area, always centered */
+/* =========================================================
+   RESPONSIVE FOLDER
+   Original sizing behavior preserved
+   ========================================================= */
+
 (function() {
-  var box = document.querySelector('.gf-center'),
-      el = document.querySelector('.gf'),
-      PAD = 0;
+
+  var box = document.querySelector('.gf-center');
+  var el = document.querySelector('.gf');
+  var PAD = 0;
 
   function fit() {
-    var w = box.clientWidth,
-        h = box.clientHeight;
+
+    var w = box.clientWidth;
+    var h = box.clientHeight;
 
     var s = Math.min(
       (w - PAD * 2) / 400,
       (h - PAD * 2) / 360
     );
 
-    el.style.setProperty('--gf-scale', Math.max(.3, s).toFixed(3));
+    el.style.setProperty(
+      '--gf-scale',
+      Math.max(.3, s).toFixed(3)
+    );
+
   }
 
   fit();
 
-  if (window.ResizeObserver)
+  if (window.ResizeObserver) {
     new ResizeObserver(fit).observe(box);
+  }
 
   window.addEventListener('resize', fit);
   window.addEventListener('orientationchange', fit);
 
-  if (window.visualViewport)
+  if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', fit);
+  }
 
-  /* Touch screens have no hover: tap to open / close */
+  /* Touch screens: tap to open / close */
   el.addEventListener('click', function() {
-    if (window.matchMedia('(hover:none)').matches)
+
+    if (window.matchMedia('(hover:none)').matches) {
       el.classList.toggle('is-open');
+    }
+
   });
+
 })();
